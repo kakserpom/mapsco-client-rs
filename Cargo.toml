@@ -3,6 +3,8 @@ name = "mapsco-client"
 version = "0.1.0"
 edition = "2021"
 repository = "https://github.com/kakserpom/mapsco-client-rs"
+description = "An API client for geocode.maps.co"
+license = "MIT"
 [dependencies]
 anyhow = {optional = true, version = "1.0.86" }
 reqwest = {optional = true, version = "0.12.4"}
