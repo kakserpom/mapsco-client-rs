@@ -1,33 +1,33 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LocationData {
-    place_id: i64,
-    licence: String,
-    osm_type: String,
-    osm_id: i64,
-    lat: String,
-    lon: String,
-    display_name: String,
-    address: Address,
-    boundingbox: Vec<String>,
+    pub place_id: i64,
+    pub licence: String,
+    pub osm_type: String,
+    pub osm_id: i64,
+    pub lat: String,
+    pub lon: String,
+    pub display_name: String,
+    pub address: Address,
+    pub boundingbox: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Address {
-    house_number: Option<String>,
-    road: Option<String>,
-    suburb: Option<String>,
-    city: Option<String>,
-    town: Option<String>,
-    village: Option<String>,
-    county: Option<String>,
-    state: String,
+    pub house_number: Option<String>,
+    pub road: Option<String>,
+    pub suburb: Option<String>,
+    pub city: Option<String>,
+    pub town: Option<String>,
+    pub village: Option<String>,
+    pub county: Option<String>,
+    pub state: String,
     #[serde(rename = "ISO3166-2-lvl4")]
-    iso3166_2_lvl4: String,
-    postcode: Option<String>,
-    country: String,
-    country_code: String,
+    pub iso3166_2_lvl4: String,
+    pub postcode: Option<String>,
+    pub country: String,
+    pub country_code: String,
 }
 
 #[derive(Clone)]
@@ -56,7 +56,11 @@ impl MapscoClient {
         }
     }
 
-    pub async fn reverse_geocode(&self, lat: f64, lon: f64) -> Result<LocationData, anyhow::Error> {
+    pub async fn reverse_geocode(
+        &self,
+        lat: f64,
+        lon: f64,
+    ) -> Result<LocationData, reqwest::Error> {
         let url = reqwest::Url::parse_with_params(
             &self.base_url,
             &[
@@ -64,7 +68,8 @@ impl MapscoClient {
                 ("lon", lon.to_string()),
                 ("key", self.api_key.clone()),
             ],
-        )?;
+        )
+        .unwrap();
         let response = self.client.get(url).send().await?;
         let location_data: LocationData = response.json().await?;
         Ok(location_data)
