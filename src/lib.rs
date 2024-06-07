@@ -1,13 +1,15 @@
 use serde::{Deserialize, Serialize};
-
+use serde_this_or_that::as_f64;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LocationData {
     pub place_id: i64,
     pub licence: String,
     pub osm_type: String,
     pub osm_id: i64,
-    pub lat: String,
-    pub lon: String,
+    #[serde(deserialize_with = "as_f64")]
+    pub lat: f64,
+    #[serde(deserialize_with = "as_f64")]
+    pub lon: f64,
     pub display_name: String,
     pub address: Address,
     pub boundingbox: Vec<String>,
@@ -22,12 +24,12 @@ pub struct Address {
     pub town: Option<String>,
     pub village: Option<String>,
     pub county: Option<String>,
-    pub state: String,
+    pub state: Option<String>,
     #[serde(rename = "ISO3166-2-lvl4")]
     pub iso3166_2_lvl4: String,
     pub postcode: Option<String>,
-    pub country: String,
-    pub country_code: String,
+    pub country: Option<String>,
+    pub country_code: Option<String>,
 }
 
 #[derive(Clone)]
@@ -52,7 +54,7 @@ impl MapscoClient {
         Self {
             api_key,
             client: reqwest::Client::new(),
-            base_url: "https://geocode.maps.co/reverse".to_string(),
+            base_url: "https://geocode.maps.co/reverse".into(),
         }
     }
 
@@ -61,28 +63,38 @@ impl MapscoClient {
         lat: f64,
         lon: f64,
     ) -> Result<LocationData, reqwest::Error> {
-        let url = reqwest::Url::parse_with_params(
-            &self.base_url,
-            &[
-                ("lat", lat.to_string()),
-                ("lon", lon.to_string()),
-                ("key", self.api_key.clone()),
-            ],
-        )
-        .unwrap();
-        let response = self.client.get(url).send().await?;
-        let location_data: LocationData = response.json().await?;
-        Ok(location_data)
+        Ok(self
+            .client
+            .get(
+                reqwest::Url::parse_with_params(
+                    &self.base_url,
+                    &[
+                        ("lat", lat.to_string()),
+                        ("lon", lon.to_string()),
+                        ("key", self.api_key.clone()),
+                    ],
+                )
+                .unwrap(),
+            )
+            .send()
+            .await?
+            .json()
+            .await?)
     }
 
     pub async fn search(&self, query: &str) -> Result<Vec<LocationData>, reqwest::Error> {
-        let url = reqwest::Url::parse_with_params(
-            &format!("{}/search", self.base_url),
-            &[("q", query.to_string()), ("key", self.api_key.clone())],
-        )
-        .unwrap();
-        let response = self.client.get(url).send().await?;
-        let search_results: Vec<LocationData> = response.json().await?;
-        Ok(search_results)
+        Ok(self
+            .client
+            .get(
+                reqwest::Url::parse_with_params(
+                    &format!("{}/search", self.base_url),
+                    &[("q", query.to_string()), ("key", self.api_key.clone())],
+                )
+                .unwrap(),
+            )
+            .send()
+            .await?
+            .json()
+            .await?)
     }
 }
