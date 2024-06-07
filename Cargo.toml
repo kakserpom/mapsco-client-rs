@@ -1,6 +1,6 @@
 [package]
 name = "mapsco-client"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 repository = "https://github.com/kakserpom/mapsco-client-rs"
 description = "An API client for geocode.maps.co"

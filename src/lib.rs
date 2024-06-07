@@ -54,20 +54,16 @@ impl MapscoClient {
         Self {
             api_key,
             client: reqwest::Client::new(),
-            base_url: "https://geocode.maps.co/reverse".into(),
+            base_url: "https://geocode.maps.co".into(),
         }
     }
 
-    pub async fn reverse_geocode(
-        &self,
-        lat: f64,
-        lon: f64,
-    ) -> Result<LocationData, reqwest::Error> {
+    pub async fn reverse(&self, lat: f64, lon: f64) -> Result<LocationData, reqwest::Error> {
         Ok(self
             .client
             .get(
                 reqwest::Url::parse_with_params(
-                    &self.base_url,
+                    &format!("{}/reverse", self.base_url),
                     &[
                         ("lat", lat.to_string()),
                         ("lon", lon.to_string()),
