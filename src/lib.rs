@@ -3,16 +3,25 @@ use serde_this_or_that::as_f64;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LocationData {
     pub place_id: i64,
-    pub licence: String,
-    pub osm_type: String,
-    pub osm_id: i64,
+    pub licence: Option<String>,
+    pub osm_type: Option<String>,
+    pub osm_id: Option<i64>,
     #[serde(deserialize_with = "as_f64")]
     pub lat: f64,
     #[serde(deserialize_with = "as_f64")]
     pub lon: f64,
     pub display_name: String,
-    pub address: Address,
+    pub address: Option<Address>,
     pub boundingbox: Vec<String>,
+    pub class: Option<String>,
+    pub r#type: Option<String>,
+    pub importance: Option<f64>,
+}
+use std::fmt;
+impl fmt::Display for LocationData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self.display_name)
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -26,7 +35,7 @@ pub struct Address {
     pub county: Option<String>,
     pub state: Option<String>,
     #[serde(rename = "ISO3166-2-lvl4")]
-    pub iso3166_2_lvl4: String,
+    pub iso3166_2_lvl4: Option<String>,
     pub postcode: Option<String>,
     pub country: Option<String>,
     pub country_code: Option<String>,
@@ -67,7 +76,7 @@ impl MapscoClient {
                     &[
                         ("lat", lat.to_string()),
                         ("lon", lon.to_string()),
-                        ("key", self.api_key.clone()),
+                        ("api_key", self.api_key.clone()),
                     ],
                 )
                 .unwrap(),
@@ -79,18 +88,20 @@ impl MapscoClient {
     }
 
     pub async fn search(&self, query: &str) -> Result<Vec<LocationData>, reqwest::Error> {
-        Ok(self
+        let text = &self
             .client
             .get(
                 reqwest::Url::parse_with_params(
                     &format!("{}/search", self.base_url),
-                    &[("q", query.to_string()), ("key", self.api_key.clone())],
+                    &[("q", query.to_string()), ("api_key", self.api_key.clone())],
                 )
                 .unwrap(),
             )
             .send()
             .await?
-            .json()
-            .await?)
+            .text()
+            .await?;
+        println!("text = {text}");
+        Ok(serde_json::from_str(text).unwrap())
     }
 }
