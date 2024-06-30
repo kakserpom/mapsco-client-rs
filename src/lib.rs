@@ -88,7 +88,7 @@ impl MapscoClient {
     }
 
     pub async fn search(&self, query: &str) -> Result<Vec<LocationData>, reqwest::Error> {
-        let text = &self
+        Ok(&self
             .client
             .get(
                 reqwest::Url::parse_with_params(
@@ -99,9 +99,7 @@ impl MapscoClient {
             )
             .send()
             .await?
-            .text()
-            .await?;
-        println!("text = {text}");
-        Ok(serde_json::from_str(text).unwrap())
+            .json()
+            .await?);
     }
 }
