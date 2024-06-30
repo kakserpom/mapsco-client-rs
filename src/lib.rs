@@ -68,8 +68,7 @@ impl MapscoClient {
     }
 
     pub async fn reverse(&self, lat: f64, lon: f64) -> Result<LocationData, reqwest::Error> {
-        Ok(self
-            .client
+        self.client
             .get(
                 reqwest::Url::parse_with_params(
                     &format!("{}/reverse", self.base_url),
@@ -84,12 +83,11 @@ impl MapscoClient {
             .send()
             .await?
             .json()
-            .await?)
+            .await
     }
 
     pub async fn search(&self, query: &str) -> Result<Vec<LocationData>, reqwest::Error> {
-        Ok(&self
-            .client
+        self.client
             .get(
                 reqwest::Url::parse_with_params(
                     &format!("{}/search", self.base_url),
@@ -100,6 +98,6 @@ impl MapscoClient {
             .send()
             .await?
             .json()
-            .await?);
+            .await
     }
 }
